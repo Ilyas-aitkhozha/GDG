@@ -1,5 +1,18 @@
 import pygame
-
+from sql_data import user_exist, current_data, insert_user_data,update_score,insert_game
+#taking input from users 
+user_name_x = input("enter user name for 0 ").strip()
+user_name_0 = input("enter user name for 0 ").strip()
+#with queries from sqldata checking for existence, and if they didnt play creating new players
+if user_exist(user_name_x, user_name_0):
+    score_x = current_data(user_name_x)
+    score_0 = current_data(user_name_0)
+    print(f"welcome, {user_name_x}! continie with score {score_x}")
+    print(f"welcome, {user_name_0}! continue with score {score_0}")
+else:
+    insert_user_data(user_name_x)
+    insert_user_data(user_name_0)               
+    print("new players")
 pygame.init()
 size_block = 200
 margin = 20
@@ -81,10 +94,21 @@ while running:
 
     # checking, if someone won or not
     if not game_over:
-        if (next_move - 1) % 2 == 0:
-            game_over = winner(arr, 'x')
-        else:
-            game_over = winner(arr, '0')
+        result_x = winner(arr, 'x')
+        result_0 = winner(arr, '0')
+        if result_x == 'x':
+            #updating results if x won
+            update_score(user_name_x)
+            insert_game(user_name_x, user_name_0, 'x')
+            game_over = 'x'
+        elif result_0 == '0':
+            #the same thing
+            update_score(user_name_0)
+            insert_game(user_name_x, user_name_0, '0')
+            game_over = '0'
+        elif result_x == 'Draw':
+            insert_game(user_name_x, user_name_0, 'draw')
+            game_over = 'Draw'
     draw_grid()
     # if game is over, fill screen with black, and print who won
     if game_over:
