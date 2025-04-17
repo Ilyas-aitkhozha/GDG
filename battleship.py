@@ -221,7 +221,7 @@ def main():
                         if result:
                             end_font = pygame.font.SysFont(None, 40)
                             if result == 'win':
-                                end_text = "Победа! его все корабли разрушены."
+                                end_text = "Победа! все его корабли разрушены."
                             else:
                                 end_text = "Поражение! Все твои корабли уничтожены."
                             surf = end_font.render(end_text, True, COLOR_TEXT)
