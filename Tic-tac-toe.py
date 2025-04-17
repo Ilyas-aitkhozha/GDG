@@ -1,8 +1,9 @@
 import pygame
 from sql_data import user_exist, current_data, insert_user_data,update_score,insert_game
 #taking input from users 
-user_name_x = input("enter user name for 0 ").strip()
+user_name_x = input("enter user name for X ").strip()
 user_name_0 = input("enter user name for 0 ").strip()
+
 #with queries from sqldata checking for existence, and if they didnt play creating new players
 if user_exist(user_name_x, user_name_0):
     score_x = current_data(user_name_x)
