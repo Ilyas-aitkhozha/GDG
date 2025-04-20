@@ -19,16 +19,16 @@ def can_place(board, row, col, length, orientation):
     rows = len(board)
     cols = len(board[0])
     if orientation == 'H':
-        if col + length > cols:
-            return False
-        for i in range(length):
-            if board[row][col + i] != 0:
-                return False
-    else:  # вертикально
-        if row + length > rows:
-            return False
-        for i in range(length):
-            if board[row + i][col] != 0:
+        if col + length > cols: return False
+        r0, r1 = row-1, row+1 #снизу сверху
+        c0, c1 = col-1, col+length #слева до конца корабля
+    else:
+        if row + length > rows: return False
+        r0, r1 = row-1, row+length #снизу до конца сверху
+        c0, c1 = col-1, col+1 #слева справа
+    for rr in range(r0, r1+1):
+        for cc in range(c0, c1 + 1):
+            if 0 <= rr < rows and 0 <= cc < cols and board[rr][cc] != 0:
                 return False
     return True
 
@@ -64,6 +64,10 @@ def generate_board(ships, board_size=10):
             current_ship_id += 1
     return board
 
+
+enemy_targets = []
+
+
 def enemy_shot(player_board, shots_made):
     """
     Enemy выбирает случайную ячейку на поле игрока, куда еще не стрелял Обновляет поле: если клетка пуста отмечает промахом (-99),
@@ -74,25 +78,45 @@ def enemy_shot(player_board, shots_made):
     available = [(r, c) for r in range(rows) for c in range(cols) if (r, c) not in shots_made]
     if not available:
         return None
-    
-    row, col = random.choice(available)
+    if enemy_targets:
+        for _ in range(len(enemy_targets)):
+            r, c = enemy_targets.pop(0)
+            if (r, c) in available:
+                row, col = r, c
+                break
+        else:
+            enemy_targets.clear()
+            row, col = random.choice(available)
+    else:
+        row, col = random.choice(available)
+
     shots_made.add((row, col))
-    
     cell = player_board[row][col]
     if cell == 0:
-        player_board[row][col] = -99  # промах
+        player_board[row][col] = -99
         return (row, col, "Промах", None)
-    else:
-        if cell < 0:
-            return (row, col, "Уже стреляли", None)
-        ship_id = cell
-        player_board[row][col] = -ship_id  # отмечаем попадание
-        
-        alive = any(player_board[r][c] == ship_id for r in range(rows) for c in range(cols))
-        if alive:
-            return (row, col, "Попадание", None)
-        else:
-            return (row, col, "Уничтожен корабль", ship_id)
+
+    if cell < 0:
+        return (row, col, "Уже стреляли", None)
+
+    # попадание — помечаем и добавляем соседей в очередь
+    ship_id = cell
+    player_board[row][col] = -ship_id
+    for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+        nr, nc = row+dr, col+dc
+        if (nr, nc) in available and (nr, nc) not in enemy_targets:
+            enemy_targets.append((nr, nc))
+
+    # проверяем, потонул ли корабль
+    alive = any(player_board[r][c] == ship_id for r in range(rows) for c in range(cols))
+    if not alive:
+        enemy_targets.clear()
+        return (row, col, "Уничтожен корабль", ship_id)
+
+    return (row, col, "Попадание", None)
+
+
+    
 
 def player_shot(enemy_board, shots_made, row, col):
     """
