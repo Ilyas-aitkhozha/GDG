@@ -1,4 +1,5 @@
 import pygame, sys, random
+from datetime import datetime
 
 pygame.init()
 
@@ -76,11 +77,18 @@ wall1 = Wall(screen_width - 20, screen_height / 2 - 70, 10, 140, screen_height)
 wall2 = Wall(10, screen_height / 2 - 70, 10, 140, screen_height)
 escape_pressed = True
 paused = True
+INC_SPEED = pygame.USEREVENT + 1
+pygame.time.set_timer(INC_SPEED, 1000)
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == INC_SPEED: # если наш юзерский, увеличваем скорость на 10 проц
+            wall1.speed *= 1.1  
+            wall2.speed *= 1.1
+            ball.speed_x *= 1.1
+            ball.speed_y *= 1.1
             #logic for walls movement
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_DOWN:
@@ -105,7 +113,7 @@ while True:
                 escape_pressed = False
     if not paused:
         wall1.move()
-        wall2.move()        
+        wall2.move()
         ball.physics(wall1, wall2)
         screen.fill(bg_color)
         ball.draw_scores(screen)
